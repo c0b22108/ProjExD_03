@@ -169,7 +169,8 @@ def main():
             bird.change_img(6, screen)
             pg.display.update()
             time.sleep(1)
-            return            
+            
+            return         
         
         if bird._rct.colliderect(bomb._rct):
             # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
