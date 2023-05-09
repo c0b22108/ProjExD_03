@@ -28,6 +28,19 @@ def check_bound(area, obj):
     return yoko, tate
 
 
+class Text:
+    def __init__(self,pos):
+        self.font2 = pg.font.SysFont(None, 50)
+        self.text2 = self.font2.render(" ", True, (255,0,0))
+        self.pos = pos
+        self.value = " "
+    def update(self,screen):
+        screen.blit(self.text2,self.pos)
+    
+    def set_value(self,value):
+        self.value = value
+        self.text2 = self.font2.render(self.value, True, (255,0,0))
+
 class Bird:
     """
     ゲームキャラクター（こうかとん）に関するクラス
@@ -222,10 +235,14 @@ def main():
 
     tmr = 0
     
+    score_value = 0
+    
     beams = []
     finish_flg = False
     
     final_fire_time = time.time()
+    
+    score = Text((200,200))
     
     while True:
         for event in pg.event.get():
@@ -270,12 +287,15 @@ def main():
                         beams.pop(i - pop_index)
                         bombs.pop(j - pop_index)
                         pop_index += 1
+                        score_value += 100
+                        score.set_value(f"score : {score_value}")
                         
         #print(len(Explosion.expplode_list))
         for explode in Explosion.expplode_list:
             explode.update(screen)
                         
-                    
+        score.update(screen)
+        
         bird.update(key_lst, screen)
         if bombs != []:
             for bomb in bombs:
