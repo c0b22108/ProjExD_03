@@ -168,7 +168,7 @@ class Beam:
         self = None
         
     
-
+ 
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -197,6 +197,7 @@ def main():
         
         
         
+        
         if finish_flg:
             bird.change_img(6, screen)
             pg.display.update()
@@ -219,6 +220,7 @@ def main():
                 final_fire_time = time.time()
                 beams.append(Beam(bird))
         
+        #multibream
         pop_index = 0
         for i,beam in enumerate(beams):
             beam.update(screen)
