@@ -2,6 +2,7 @@ import random
 import sys
 import time
 import random
+import math
 
 import pygame as pg
 
@@ -68,6 +69,7 @@ class Bird:
         )
         self._rct = self._img.get_rect()
         self._rct.center = xy
+        self._dv = (0,0)
 
 
     def change_img(self, num: int, screen: pg.Surface):
@@ -96,7 +98,10 @@ class Bird:
                 
         if  (tuple(mv_lis) != (0,0)):
             self._img = self.bird_arg[tuple(mv_lis)]
-                
+            self._dv = tuple(mv_lis)
+        else:
+            #self._img = self.bird_arg[tuple(mv_lis)]
+            pass
                 
     
         if check_bound(screen.get_rect(), self._rct) != (True, True):
@@ -109,6 +114,9 @@ class Bird:
     
     def get_right(self):
         return self._rct.right
+    
+    def get_direction(self):
+        return self._dv
  
 
 
@@ -159,13 +167,13 @@ class Explosion:
         self.expplode_list.append(self)
         
     def update(self,screen):
-        print("explode update!")
+        #print("explode update!")
         if time.time() - self._life < self.life:
             self._img = pg.transform.flip(self._img,True, True)
             screen.blit(self._img, self._rct)
-            print("explode blited")
+            #print("explode blited")
         else:
-            print("removed")
+            #print("removed")
             __class__.expplode_list.remove(self)
             
 class Beam:
@@ -181,10 +189,16 @@ class Beam:
         
         self._rct = self._img.get_rect()
         self._rct.center = bird_obj._rct.center
-        self._rct.center = (bird_obj._rct.right,bird_obj._rct.center[1])
+        self._vx, self._vy = bird_obj.get_direction()  
         
-        self._vx, self._vy = +1, +0
-
+        self._rct.center = (self._rct.center[0] + self._vx * abs(bird_obj._rct.center[0]-bird_obj._rct.right),
+                            self._rct.center[1] + self._vy * abs(bird_obj._rct.center[0]-bird_obj._rct.right))
+        
+        
+        self._img = pg.transform.rotozoom(
+                pg.image.load(f"fig/beam.png"), 
+                math.degrees(math.atan2(-self._vy,self._vx)), 
+                1.0)
     def update(self, screen: pg.Surface):
         self._rct.move_ip(self._vx, self._vy)
         screen.blit(self._img, self._rct)
