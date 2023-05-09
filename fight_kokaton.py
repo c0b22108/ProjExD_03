@@ -9,7 +9,9 @@ WIDTH = 1600  # ゲームウィンドウの幅
 HEIGHT = 900  # ゲームウィンドウの高さ
 
 
-def check_bound(area: pg.Rect, obj: pg.Rect) -> tuple[bool, bool]:
+#def check_bound(area: pg.Rect, obj: pg.Rect) -> tuple[bool, bool]:
+def check_bound(area, obj):
+
     """
     オブジェクトが画面内か画面外かを判定し，真理値タプルを返す
     引数1 area：画面SurfaceのRect
@@ -35,7 +37,8 @@ class Bird:
         pg.K_RIGHT: (+1, 0),
     }
 
-    def __init__(self, num: int, xy: tuple[int, int]):
+    #def __init__(self, num: int, xy: tuple[int, int]):
+    def __init__(self, num: int, xy):
         """
         こうかとん画像Surfaceを生成する
         引数1 num：こうかとん画像ファイル名の番号
@@ -43,7 +46,7 @@ class Bird:
         """
         self._img = pg.transform.flip(  # 左右反転
             pg.transform.rotozoom(  # 2倍に拡大
-                pg.image.load(f"ex03/fig/{num}.png"), 
+                pg.image.load(f"fig/{num}.png"), 
                 0, 
                 2.0), 
             True, 
@@ -58,10 +61,10 @@ class Bird:
         引数1 num：こうかとん画像ファイル名の番号
         引数2 screen：画面Surface
         """
-        self._img = pg.transform.rotozoom(pg.image.load(f"ex03/fig/{num}.png"), 0, 2.0)
+        self._img = pg.transform.rotozoom(pg.image.load(f"fig/{num}.png"), 0, 2.0)
         screen.blit(self._img, self._rct)
 
-    def update(self, key_lst: list[bool], screen: pg.Surface):
+    def update(self, key_lst, screen: pg.Surface):
         """
         押下キーに応じてこうかとんを移動させる
         引数1 key_lst：押下キーの真理値リスト
@@ -75,13 +78,16 @@ class Bird:
                 if key_lst[k]:
                     self._rct.move_ip(-mv[0], -mv[1])
         screen.blit(self._img, self._rct)
+    
+    def get_right(self):
+        return self._rct.right
 
 
 class Bomb:
     """
     爆弾に関するクラス
     """
-    def __init__(self, color: tuple[int, int, int], rad: int):
+    def __init__(self, color, rad: int):
         """
         引数に基づき爆弾円Surfaceを生成する
         引数1 color：爆弾円の色タプル
@@ -106,24 +112,64 @@ class Bomb:
             self._vy *= -1
         self._rct.move_ip(self._vx, self._vy)
         screen.blit(self._img, self._rct)
+    
+    def destroy(self):
+        self = None  
 
+class Beam:
+    def __init__(self, bird_obj):
+        self._img = pg.transform.flip(  # 左右反転
+            pg.transform.rotozoom(  # 2倍に拡大
+                pg.image.load(f"fig/beam.png"), 
+                0, 
+                2.0), 
+            True, 
+            False
+        )
+        
+        self._rct = self._img.get_rect()
+        self._rct.center = bird_obj._rct.center
+        self._rct.center = (bird_obj._rct.right,bird_obj._rct.center[1])
+        
+        self._vx, self._vy = +1, +0
+
+    def update(self, screen: pg.Surface):
+        self._rct.move_ip(self._vx, self._vy)
+        screen.blit(self._img, self._rct)
+    
+    def destroy(self):
+        self = None
+        
+    
 
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     clock = pg.time.Clock()
-    bg_img = pg.image.load("ex03/fig/pg_bg.jpg")
+    bg_img = pg.image.load("fig/pg_bg.jpg")
 
     bird = Bird(3, (900, 400))
     bomb = Bomb((255, 0, 0), 10)
 
     tmr = 0
+    
+    beams = []
+    finish_flg = False
+    
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return
         tmr += 1
         screen.blit(bg_img, [0, 0])
+        
+        
+        
+        if finish_flg:
+            bird.change_img(6, screen)
+            pg.display.update()
+            time.sleep(1)
+            return            
         
         if bird._rct.colliderect(bomb._rct):
             # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
@@ -133,8 +179,23 @@ def main():
             return
 
         key_lst = pg.key.get_pressed()
+        if key_lst[pg.K_SPACE]:
+            beams.append(Beam(bird))
+        
+        pop_index = 0
+        for i,beam in enumerate(beams):
+            beam.update(screen)
+            if not finish_flg:
+                if beam._rct.colliderect(bomb._rct):
+                    #beams.pop(i - pop_index)
+                    #pop_index += 1
+                    bomb = None
+                    finish_flg = True
+                    
+                    
         bird.update(key_lst, screen)
-        bomb.update(screen)
+        if not finish_flg:
+            bomb.update(screen)
         pg.display.update()
         clock.tick(1000)
 
