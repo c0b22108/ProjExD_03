@@ -37,7 +37,20 @@ class Bird:
         pg.K_LEFT: (-1, 0),
         pg.K_RIGHT: (+1, 0),
     }
-
+    
+    bird_arg = {
+        (-1,1):pg.transform.flip(pg.transform.rotozoom(pg.image.load(f"fig/3.png"), 45, 2.0),False, False),
+        (-1,0):pg.transform.flip(pg.transform.rotozoom(pg.image.load(f"fig/3.png"), 0, 2.0),False, False),
+        (-1,-1):pg.transform.flip(pg.transform.rotozoom(pg.image.load(f"fig/3.png"), -45, 2.0),False, False),
+        (0,-1):pg.transform.flip(pg.transform.rotozoom(pg.image.load(f"fig/3.png"), -90, 2.0),True, False),
+        (0,0):pg.transform.flip(pg.transform.rotozoom(pg.image.load(f"fig/3.png"), 0, 2.0),True, False),
+        (0,1):pg.transform.flip(pg.transform.rotozoom(pg.image.load(f"fig/3.png"), 90, 2.0),True, False),
+        (1,1):pg.transform.flip(pg.transform.rotozoom(pg.image.load(f"fig/3.png"), 45, 2.0),True, False),
+        (1,0):pg.transform.flip(pg.transform.rotozoom(pg.image.load(f"fig/3.png"), 0, 2.0),True, False),
+        (1,-1):pg.transform.flip(pg.transform.rotozoom(pg.image.load(f"fig/3.png"), -45, 2.0),True, False)
+        }
+    
+    
     #def __init__(self, num: int, xy: tuple[int, int]):
     def __init__(self, num: int, xy):
         """
@@ -71,13 +84,26 @@ class Bird:
         引数1 key_lst：押下キーの真理値リスト
         引数2 screen：画面Surface
         """
+        
+        mv_lis = [0,0]
         for k, mv in __class__._delta.items():
+            
             if key_lst[k]:
+                mv_lis[0] += mv[0]
+                mv_lis[1] += mv[1]
                 self._rct.move_ip(mv)
+                
+        if not (tuple(mv_lis) is (0,0)):
+            self._img = self.bird_arg[tuple(mv_lis)]
+                
+                
+    
         if check_bound(screen.get_rect(), self._rct) != (True, True):
             for k, mv in __class__._delta.items():
                 if key_lst[k]:
                     self._rct.move_ip(-mv[0], -mv[1])
+                    
+                
         screen.blit(self._img, self._rct)
     
     def get_right(self):
