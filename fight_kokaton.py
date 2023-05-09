@@ -69,6 +69,7 @@ class Bird:
         self._rct = self._img.get_rect()
         self._rct.center = xy
 
+
     def change_img(self, num: int, screen: pg.Surface):
         """
         こうかとん画像を切り替え，画面に転送する
@@ -93,7 +94,7 @@ class Bird:
                 mv_lis[1] += mv[1]
                 self._rct.move_ip(mv)
                 
-        if not (tuple(mv_lis) is (0,0)):
+        if  (tuple(mv_lis) != (0,0)):
             self._img = self.bird_arg[tuple(mv_lis)]
                 
                 
@@ -108,6 +109,8 @@ class Bird:
     
     def get_right(self):
         return self._rct.right
+ 
+
 
 
 class Bomb:
@@ -141,8 +144,30 @@ class Bomb:
         screen.blit(self._img, self._rct)
     
     def destroy(self):
-        self = None  
+        Explosion(self._rct.center)
 
+class Explosion:
+    life = 1
+    expplode_list = []
+    def __init__(self,xy):
+        self._img = pg.transform.flip(
+                pg.image.load(f"fig/explosion.gif"),
+                True, False)
+        self._rct = self._img.get_rect()
+        self._rct.center = xy
+        self._life = time.time()
+        self.expplode_list.append(self)
+        
+    def update(self,screen):
+        print("explode update!")
+        if time.time() - self._life < self.life:
+            self._img = pg.transform.flip(self._img,True, True)
+            screen.blit(self._img, self._rct)
+            print("explode blited")
+        else:
+            print("removed")
+            __class__.expplode_list.remove(self)
+            
 class Beam:
     def __init__(self, bird_obj):
         self._img = pg.transform.flip(  # 左右反転
@@ -165,7 +190,7 @@ class Beam:
         screen.blit(self._img, self._rct)
     
     def destroy(self):
-        self = None
+        Explosion(self._rct.center)
         
     
  
@@ -214,7 +239,6 @@ def main():
                 return
 
         key_lst = pg.key.get_pressed()
-        print(time.time())
         if key_lst[pg.K_SPACE]:
             if  time.time() - final_fire_time > 1:
                 final_fire_time = time.time()
@@ -227,11 +251,15 @@ def main():
             for j,bomb in enumerate(bombs):
                 if bombs != []:
                     if beam._rct.colliderect(bomb._rct):
+                        beam.destroy()
+                        bomb.destroy()
                         beams.pop(i - pop_index)
                         bombs.pop(j - pop_index)
                         pop_index += 1
                         
-
+        #print(len(Explosion.expplode_list))
+        for explode in Explosion.expplode_list:
+            explode.update(screen)
                         
                     
         bird.update(key_lst, screen)
