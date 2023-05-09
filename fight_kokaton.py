@@ -27,6 +27,57 @@ def check_bound(area, obj):
         tate = False
     return yoko, tate
 
+class BombPlant:
+    bomb_list = []
+    def __init__(self, color, rad: int):
+        """
+        引数に基づき爆弾円Surfaceを生成する
+        引数1 color：爆弾円の色タプル
+        引数2 rad：爆弾円の半径
+        """
+        self._img = pg.Surface((2*rad, 2*rad))
+        pg.draw.circle(self._img, color, (rad, rad), rad)
+        self._img.set_colorkey((0, 0, 0))
+        self._rct = self._img.get_rect()
+        self._rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
+        
+        #self.dv = type("dv","x","y")
+        
+        
+        #self.expplode_list.append(self)
+        
+
+    def update(self, screen: pg.Surface):
+        
+        if random.random() > 0.95:
+            bomb_tmp = Bomb( (random.randint(0,255), random.randint(0,255), random.randint(0,255) ,random.randint(0,255)), (random.randint(8,20)) )
+            bomb_tmp._rct.center = self._rct.center
+        
+        for i in __class__.bomb_list:
+            i.update()
+        
+        
+class Explosion:
+    life = 1
+    expplode_list = []
+    def __init__(self,xy):
+        self._img = pg.transform.flip(
+                pg.image.load(f"fig/explosion.gif"),
+                True, False)
+        self._rct = self._img.get_rect()
+        self._rct.center = xy
+        self._life = time.time()
+        self.expplode_list.append(self)
+        
+    def update(self,screen):
+        #print("explode update!")
+        if time.time() - self._life < self.life:
+            self._img = pg.transform.flip(self._img,True, True)
+            screen.blit(self._img, self._rct)
+            #print("explode blited")
+        else:
+            #print("removed")
+            __class__.expplode_list.remove(self)
 
 class Text:
     def __init__(self,pos):
