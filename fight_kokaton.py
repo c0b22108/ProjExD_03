@@ -29,6 +29,11 @@ def check_bound(area, obj):
 
 
 class Text:
+    """
+    イニシャライザには座標を（x,y）の形式で指定してください
+    updateでは貼り付けるScreenを引数に取ります。
+    set_valueは出力したい文字列を変更したいときに使用します。
+    """
     def __init__(self,pos):
         self.font2 = pg.font.SysFont(None, 50)
         self.text2 = self.font2.render(" ", True, (255,0,0))
