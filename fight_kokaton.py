@@ -29,7 +29,7 @@ def check_bound(area, obj):
 
 class BombPlant:
     bomb_list = []
-    def __init__(self, color, rad: int):
+    def __init__(self,bomb_l, color, rad: int):
         """
         引数に基づき爆弾円Surfaceを生成する
         引数1 color：爆弾円の色タプル
@@ -42,19 +42,18 @@ class BombPlant:
         self._rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
         
         #self.dv = type("dv","x","y")
-        
+        __class__.bomb_list = bomb_l
         
         #self.expplode_list.append(self)
         
 
-    def update(self, screen: pg.Surface):
+    def update(self):
         
-        if random.random() > 0.95:
+        if random.random() > 0.99:
             bomb_tmp = Bomb( (random.randint(0,255), random.randint(0,255), random.randint(0,255) ,random.randint(0,255)), (random.randint(8,20)) )
             bomb_tmp._rct.center = self._rct.center
-        
-        for i in __class__.bomb_list:
-            i.update()
+            __class__.bomb_list.append(bomb_tmp)
+
         
         
 class Explosion:
@@ -200,7 +199,7 @@ class Bomb:
         self._img.set_colorkey((0, 0, 0))
         self._rct = self._img.get_rect()
         self._rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
-        self._vx, self._vy = +1, +1
+        self._vx, self._vy = random.randint(-1,1),random.randint(-1,1)
 
     def update(self, screen: pg.Surface):
         """
@@ -292,7 +291,8 @@ def main():
     finish_flg = False
     
     final_fire_time = time.time()
-    
+    bomplant = BombPlant(bombs,(random.randint(0,255), random.randint(0,255), random.randint(0,255) ,random.randint(0,255)), (random.randint(8,20)) )
+
     score = Text((200,200))
     
     while True:
@@ -346,7 +346,7 @@ def main():
             explode.update(screen)
                         
         score.update(screen)
-        
+        bomplant.update()
         bird.update(key_lst, screen)
         if bombs != []:
             for bomb in bombs:
