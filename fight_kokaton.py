@@ -1,6 +1,7 @@
 import random
 import sys
 import time
+import random
 
 import pygame as pg
 
@@ -8,7 +9,7 @@ import pygame as pg
 WIDTH = 1600  # ゲームウィンドウの幅
 HEIGHT = 900  # ゲームウィンドウの高さ
 
-
+NUM_OF_BOMBS = 5
 #def check_bound(area: pg.Rect, obj: pg.Rect) -> tuple[bool, bool]:
 def check_bound(area, obj):
 
@@ -149,12 +150,17 @@ def main():
     bg_img = pg.image.load("fig/pg_bg.jpg")
 
     bird = Bird(3, (900, 400))
-    bomb = Bomb((255, 0, 0), 10)
+    
+    bombs = []
+    for i in range(NUM_OF_BOMBS):
+        bombs.append(  Bomb( (random.randint(0,255), random.randint(0,255), random.randint(0,255) ,random.randint(0,255)), (random.randint(8,20)) ))
 
     tmr = 0
     
     beams = []
     finish_flg = False
+    
+    final_fire_time = time.time()
     
     while True:
         for event in pg.event.get():
@@ -172,31 +178,38 @@ def main():
             
             return         
         
-        if bird._rct.colliderect(bomb._rct):
-            # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
-            bird.change_img(8, screen)
-            pg.display.update()
-            time.sleep(1)
-            return
+        for bomb in bombs:
+            if bird._rct.colliderect(bomb._rct):
+                # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
+                bird.change_img(8, screen)
+                pg.display.update()
+                time.sleep(1)
+                return
 
         key_lst = pg.key.get_pressed()
+        print(time.time())
         if key_lst[pg.K_SPACE]:
-            beams.append(Beam(bird))
+            if  time.time() - final_fire_time > 1:
+                final_fire_time = time.time()
+                beams.append(Beam(bird))
         
         pop_index = 0
         for i,beam in enumerate(beams):
             beam.update(screen)
-            if not finish_flg:
-                if beam._rct.colliderect(bomb._rct):
-                    #beams.pop(i - pop_index)
-                    #pop_index += 1
-                    bomb = None
-                    finish_flg = True
-                    
+            for j,bomb in enumerate(bombs):
+                if bombs != []:
+                    if beam._rct.colliderect(bomb._rct):
+                        beams.pop(i - pop_index)
+                        bombs.pop(j - pop_index)
+                        pop_index += 1
+                        
+
+                        
                     
         bird.update(key_lst, screen)
-        if not finish_flg:
-            bomb.update(screen)
+        if bombs != []:
+            for bomb in bombs:
+                bomb.update(screen)
         pg.display.update()
         clock.tick(1000)
 
